@@ -1,0 +1,65 @@
+#!/usr/bin/perl
+
+use strict;
+
+my $in = shift or usage();
+
+my $ip;
+
+# Connect
+my $cmd = "docker exec -it $in bash";
+system($cmd);
+
+exit;
+
+sub usage {
+  die "usage: $0 container_id\n";
+}
+
+sub find_by_ip {
+  my $ip = shift;
+
+  foreach my $cid (`docker ps -q`) {
+    chomp($cid);
+    my $hip = get_ip($cid);
+
+    if($hip eq $ip) {
+      return $cid;
+    }
+  }
+
+  die "error: could not find IP in list of running containers: $ip\n";
+}
+
+sub find_by_hostname {
+  my $hostname = shift;
+
+  foreach my $cid (`docker ps -q`) {
+    chomp($cid);
+    my $hn = get_hostname($cid);
+
+    if($hn eq $hostname) {
+      return $cid;
+    }
+  }
+
+  die "error: could not find Hostname in list of running containers: $hostname\n";
+}
+
+sub get_ip {
+  my $cid = shift;
+  return chomp_field("docker inspect --format='{{.NetworkSettings.IPAddress}}' $cid");
+}
+
+sub get_hostname {
+  my $id = shift;
+  return chomp_field("docker inspect --format='{{.Config.Hostname}}' $id");
+}
+
+sub chomp_field {
+  my $cmd = shift;
+  my $f = `$cmd`;
+  chomp($f);
+  return $f;
+}
+

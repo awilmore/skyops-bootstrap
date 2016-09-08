@@ -1,0 +1,87 @@
+#!/usr/bin/perl
+
+use Time::HiRes qw (sleep);
+use strict;
+
+$| = 1;
+
+my $INPUT = shift or usage();
+
+$INPUT = check_digits($INPUT);
+
+my $SESSION_PREFIX = 'ts';
+
+my $session_number = determine_session_number();
+my $session_name = $SESSION_PREFIX . $session_number;
+
+# Check if session number already exists
+my @sessions = get_sessions();
+
+if(grep(/^$session_name$/, @sessions)) {
+  handle_existing_session();
+} else {
+  handle_new_session();
+}
+
+exit;
+
+sub usage {
+  die "usage: $0 session_id\n";
+}
+
+sub check_digits {
+  my $num = shift;
+
+  if($num =~ /^\d$/) {
+    return "0" . $num;
+  } else {
+    return $num;
+  }
+}
+
+sub determine_session_number {
+  if($0 =~ /\/t(\d+)$/) {
+    return $1;
+  } elsif($INPUT) {
+    return $INPUT;
+  } else {
+    return '0';
+  }
+}
+
+sub get_sessions {
+  my @list = `tmux list-sessions 2>/dev/null`;
+  my @sessions = ();
+
+  foreach my $s (@list) {
+    if($s =~ /(${SESSION_PREFIX}\d+):.*/) {
+      push @sessions, $1;
+    }
+  }
+
+  return @sessions;
+}
+
+sub handle_existing_session {
+  print "Attaching to existing session ";
+  dots();
+  system("clear");
+  system("tmux attach -t $session_name");
+}
+
+sub handle_new_session {
+  print "Creating new session "; 
+  dots();
+  system("clear");
+  system("tmux new -s $session_name");
+}
+
+sub dots {
+  print "."; sleep(0.1);
+  print "."; sleep(0.1);
+  print "."; sleep(0.1);
+  print "."; sleep(0.1);
+  print "."; sleep(0.1);
+}
+
+

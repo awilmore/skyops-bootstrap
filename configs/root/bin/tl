@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+
+use strict;
+
+if(-f "/etc/issue") { handle_local(); }
+else                { handle_remote(); }
+
+exit;
+
+sub handle_local {
+
+  banner();
+
+  print ' ________  _____  ___  __  ________________________  _  ______
+/_  __/  |/  / / / / |/_/ / __/ __/ __/ __/  _/ __ \/ |/ / __/
+ / / / /|_/ / /_/ />  <  _\ \/ _/_\ \_\ \_/ // /_/ /    /\ \
+/_/ /_/  /_/\____/_/|_| /___/___/___/___/___/\____/_/|_/___/
+
+';
+
+  my @s = `tmux list-sessions`;
+  my $count = $#s + 1;
+
+  print "Active Tmux Sessions: $count\n";
+
+  if($count > 0) {
+   print @s; 
+  }
+
+  banner();
+}
+
+sub handle_remote {
+  system('ssh -p 6901 root@localhost /root/sbin/perl/tl');
+}
+
+sub banner {
+  print "=======================================================================\n";
+}
+
+
+

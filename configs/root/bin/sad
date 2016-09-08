@@ -1,0 +1,70 @@
+#!/usr/bin/perl
+
+use strict;
+$| = 1;
+
+my $SHOW_CHECK = 0;
+
+while(my $id = shift) {
+  stop_id($id);
+  delete_id($id);
+  $SHOW_CHECK++;
+}
+
+if($SHOW_CHECK) {
+  print "\n===============================================================================\n\n";
+  print "Currently running:\n";
+  system("~/bin/di");
+}
+
+exit;
+
+sub usage {
+  die "usage: $0 container_id [force_flag]\n";
+}
+
+sub check_id {
+  my $id = shift;
+
+  my @result = `docker ps -f status=running | grep '^$id'`;
+  my $count = $#result + 1;
+
+  if($count < 1) { print "error: container is either stopped or doesn't exist\n"; return; }
+  if($count > 1) { print "error: multple containers found maching id: $id\n"; return; }
+
+  print "Running container found:\n\n";
+  print @result;
+  print "\n";
+
+  return 1;
+}
+
+sub stop_id {
+  my $id = shift;
+  print "Stopping $id.";
+  dots();
+  runcmd("docker kill $id");
+}
+
+sub delete_id {
+  my $id = shift;
+  print "Deleting $id.";
+  dots();
+  runcmd("docker rm $id");
+}
+
+sub runcmd {
+  my $cmd = shift;
+  system($cmd) == 0 or die "error: command failed to complete successfully. Return code: $?\n";
+}
+
+sub dots {
+  for(my $i = 0; $i < 5; $i++) {
+    print ".";
+    system("sleep 0.1");
+  }
+
+  print "\n";
+}
+
+

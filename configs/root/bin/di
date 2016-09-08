@@ -1,0 +1,123 @@
+#!/usr/bin/perl
+
+use strict;
+
+$| = 1;
+
+my $CIDWIDTH = 4;
+my $NAMWIDTH = 30;
+my $IMGWIDTH = 40;
+my $STSWIDTH = 14;
+my $PRTWIDTH = 38;
+
+my $TOTALWIDTH = `tput cols`;
+
+my $LF = "%-${CIDWIDTH}s  %-${NAMWIDTH}s  %-${IMGWIDTH}s  %-${STSWIDTH}s   %-${PRTWIDTH}s  %s";
+
+my $grep = shift;
+
+if($grep) {
+  open OUT, "| grep $grep" or die "error: could not open pipe to grep; $!\n";
+} else {
+  open OUT, "| cat" or die "error: could not pipe to echo: $!\n";
+}
+
+# Read in docker ps
+my @rows = `docker ps -a`;
+
+# Get first row col widths
+my $r0 = shift @rows;
+my $CIDPOS  = index($r0, "CONTAINER ID");
+my $IMGPOS = index($r0, "IMAGE");
+my $CMDPOS = index($r0, "COMMAND");
+my $CRTPOS = index($r0, "CREATED");
+my $STSPOS = index($r0, "STATUS");
+my $PRTPOS = index($r0, "PORTS");
+my $NAMPOS = index($r0, "NAMES");
+
+my $p = render("CID", "NAME", "IMAGE", "STATUS", "PORTS");
+print "$p\n";
+
+# Get remaining rows
+foreach my $r (@rows) {
+  my ($id, $name, $img, $sts, $ports) = process_row($r);
+  my $line = render($id, $name, $img, $sts, $ports);
+  print OUT "$line\n";
+}
+
+exit;
+
+sub render {
+  my ($c, $n, $i, $s, $p) = @_;
+  my $line = sprintf $LF, $c, $n, $i, $s, $p;
+
+  if(length($line) > $TOTALWIDTH) {
+    $line = substr($line, 0 , $TOTALWIDTH);
+  }
+
+  return $line;
+}
+
+sub process_row {
+  my $r = shift;
+
+  my $id    = my_substr($r, $CIDPOS, $IMGPOS-1,  $CIDWIDTH);
+  my $cname  = my_substr($r, $NAMPOS, length($r), $NAMWIDTH);
+  my $img   = my_substr($r, $IMGPOS, $CMDPOS-1,  $IMGWIDTH);
+  my $sts   = my_substr($r, $STSPOS, $PRTPOS-1,  $STSWIDTH);
+  my $ports = my_substr($r, $PRTPOS, $NAMPOS-1,  $PRTWIDTH);
+  my $aname = get_appname($id);
+
+  my $name = determine_name($cname, $aname);
+  
+  return ($id, $name, $img, $sts, $ports, $aname);
+}
+
+sub my_substr {
+  my ($r, $a, $b, $limit) = @_;
+
+  my $m = substr($r, $a, $b);
+
+  $m =~ s/\n//;
+  $m =~ s/  +.*//;
+  $m =~ s/0.0.0.0://g;
+  $m =~ s/\/tcp//g;
+  $m =~ s/ \(\d+\)//g;
+
+  if(length($m) >= $limit) {
+    $m = substr($m, 0, $limit);
+  }
+
+  return $m;
+}
+
+sub determine_name {
+  my $c = shift;
+  my $a = shift;
+  my $n = "";
+
+  if($a) {
+    $n = $a;
+
+  } else {
+    $n = $c;
+  }
+
+  if(length($n) >= $NAMWIDTH) {
+    $n = substr($n, 0, $NAMWIDTH);
+  }
+ 
+  return $n;
+}
+
+sub get_appname {
+  my $id = shift;
+  return chomp_field("docker inspect --format='{{ index .Config.Labels \"app.name\"}}' $id");
+}
+
+sub chomp_field {
+  my $cmd = shift;
+  my $f = `$cmd`;
+  chomp($f);
+  return $f;
+}

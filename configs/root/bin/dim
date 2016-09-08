@@ -1,0 +1,12 @@
+#!/usr/bin/perl
+
+use strict;
+
+my $filt = shift;
+
+if($filt) {
+  system("docker images | grep $filt");
+} else {
+  system("docker images");
+}
+

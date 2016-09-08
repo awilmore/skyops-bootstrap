@@ -1,0 +1,6 @@
+--pager=less -RFX
+--type-add=xyz:ext:xyz
+--ignore-dir=dist
+--ignore-dir=.tmp
+--ignore-dir=target
+--ignore-dir=node_modules
