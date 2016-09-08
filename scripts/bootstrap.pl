@@ -212,7 +212,7 @@ sub install_newrelic {
   logger("Installing newrelic...\n");
 
   unless(-f "/etc/init.d/newrelic-sysmond") {
-    runcmd("$PROJECT_ROOT/scripts/install_new_relic_ubuntu.sh");
+    runcmd("$PROJECT_ROOT/scripts/install_newrelic_ubuntu.sh $NR_KEY");
     logger("Done.\n\n");
   } else {
     logger("WARNING: newrelic appears to be installed already. File exists: /etc/init.dnewrelic-sysmond\n\n");
