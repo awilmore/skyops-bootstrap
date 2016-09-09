@@ -55,7 +55,7 @@ sub delete_id {
 
 sub runcmd {
   my $cmd = shift;
-  system($cmd) == 0 or die "error: command failed to complete successfully. Return code: $?\n";
+  system($cmd) == 0 or print "error: command failed to complete successfully. Return code: $?\n";
 }
 
 sub dots {
