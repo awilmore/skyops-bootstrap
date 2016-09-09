@@ -1,14 +1,14 @@
 #!/bin/bash
 
-IMAGE="rancher/agent:v0.11.0"
+IMAGE="rancher/agent:v1.0.1"
 
 
 ##########################
 # EDIT THESE VALUES...
 
 AGENT_NAME=""         # eg. skyops-aws-ubuntu-37
-AGENT_LABELS="host-type-nonprod=true&somename=somevalue"
-RANCHER_LINK_URL="http://rancher.host.com/v1/scripts/CB522431BD28FA0B19B0:1464660000000:7Rntk..."
+AGENT_LABELS="host-type-somethine=true&somename=somevalue"
+RANCHER_LINK_URL="http://172.31.36.x:8080/v1/scripts/E97B5D01B..."
 
 ##########################
 
@@ -19,7 +19,7 @@ if [ -z $AGENT_NAME ]; then
 fi
 
 # Lookup IP
-AGENT_IP=$( ifconfig | awk '/inet addr/{print substr($2,6)}' | grep '10.139' )
+AGENT_IP=$( ifconfig | awk '/inet addr/{print substr($2,6)}' | grep '172.31' )
 
 if [ -z $AGENT_IP ]; then
   echo "error: IP address lookup failed. Aborting."
