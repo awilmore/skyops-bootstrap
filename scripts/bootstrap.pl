@@ -65,6 +65,8 @@ test_docker();
 
 add_docker_newrelic_config();
 
+install_rancher_compose();
+
 
 # Done
 move_bootstrap();
@@ -283,6 +285,17 @@ sub add_docker_newrelic_config {
   runcmd("service newrelic-sysmond restart");
   
   logger("Done.\n\n");
+}
+
+sub install_rancher_compose {
+  logger("Installing rancher-compose ...\n");
+  
+  unless(-f "/usr/local/bin/rancher-compose") {
+    runcmd("$PROJECT_ROOT/scripts/docker/install-rancher-compose.sh");
+    logger("Done.\n\n");
+  } else {
+    logger("WARNING: rancher-compose appears to exist already.\n\n");
+  }
 }
 
 sub move_bootstrap {
