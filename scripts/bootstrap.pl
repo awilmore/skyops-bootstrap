@@ -167,8 +167,7 @@ sub setup_vim {
   logger("Setting up vim...\n");
 
   unless(-d "/root/.vim") {
-    runcmd("mkdir -p /root/.vim");
-    runcmd("tar -zxf $PROJECT_ROOT/configs/root/vim/vim.tgz -C /root/.vim/");
+    runcmd("tar -zxf $PROJECT_ROOT/configs/root/vim/vim.tgz -C /root/");
     logger("Done.\n\n");
   } else {
     logger("WARNING: .vim appears to exist already.\n\n");
@@ -423,6 +422,12 @@ export PATH="\$PATH:~/dbin:~/bin"
 # PS1 settings
 export COLOUR_PS="\033[1;34m"
 source /root/bin/mygitprompt.sh
+
+# For vim
+if [ ! -z "$VIM" ]; then
+  export COLOUR_PS="\033[1;30m"
+  source /root/bin/mygitprompt.sh
+fi
 
 # Useful
 alias c='cd ..'
